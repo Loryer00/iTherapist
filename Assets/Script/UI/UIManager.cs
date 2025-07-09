@@ -28,9 +28,16 @@ public class UIManager : MonoBehaviour
         Debug.Log("Aperta schermata gestione immagini");
     }
     
-    public void ChiudiGestioneImmagini()
+public void ChiudiGestioneImmagini()
+{
+    panelGestioneImmagini.SetActive(false);
+    Debug.Log("Chiusa schermata gestione immagini");
+    
+    // Torna alla homepage
+    HomepageManager homepage = FindObjectOfType<HomepageManager>();
+    if (homepage != null)
     {
-        panelGestioneImmagini.SetActive(false);
-        Debug.Log("Chiusa schermata gestione immagini");
+        homepage.TornaAllaHomepage();
     }
+}
 }

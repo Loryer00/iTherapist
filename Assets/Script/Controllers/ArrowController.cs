@@ -15,7 +15,8 @@ public class ArrowController : MonoBehaviour
     private int direzioneCorrente;
     private SwipeDetector swipeDetector;
 	private Coroutine animazioneCorrente;
-	private ImageManager imageManager; 
+	private ImageManager imageManager;
+	private HomepageManager homepageManager;
     
     void Start()
 {
@@ -26,6 +27,9 @@ public class ArrowController : MonoBehaviour
     
     // Trova il componente ImageManager
     imageManager = GetComponent<ImageManager>();
+	
+	// Trova il componente HomepageManager
+homepageManager = FindObjectOfType<HomepageManager>();
     
     // Collega gli eventi swipe
     swipeDetector.OnSwipeUp += () => VerificaGesto(0);
@@ -56,9 +60,10 @@ public class ArrowController : MonoBehaviour
     direzioneCorrente = nuovaDirezione;
     Debug.Log($"Mostra freccia: {nomiDirezioni[direzioneCorrente]}");
     
-    // Ruota la freccia visualmente
+    // RESET POSIZIONE AL CENTRO
     if (frecciaPrefab != null)
     {
+        frecciaPrefab.transform.localPosition = Vector3.zero;
         // Angoli di rotazione: Su=0°, Giù=180°, Sinistra=90°, Destra=270°
         float[] angoli = { 0f, 180f, 90f, 270f };
         frecciaPrefab.transform.rotation = Quaternion.Euler(0, 0, angoli[direzioneCorrente]);
