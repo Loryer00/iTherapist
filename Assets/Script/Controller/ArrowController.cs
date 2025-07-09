@@ -15,22 +15,26 @@ public class ArrowController : MonoBehaviour
     private int direzioneCorrente;
     private SwipeDetector swipeDetector;
 	private Coroutine animazioneCorrente;
+	private ImageManager imageManager; 
     
     void Start()
-    {
-        Debug.Log("ArrowController avviato!");
-        
-        // Trova il componente SwipeDetector
-        swipeDetector = GetComponent<SwipeDetector>();
-        
-        // Collega gli eventi swipe
-        swipeDetector.OnSwipeUp += () => VerificaGesto(0);
-        swipeDetector.OnSwipeDown += () => VerificaGesto(1);
-        swipeDetector.OnSwipeLeft += () => VerificaGesto(2);
-        swipeDetector.OnSwipeRight += () => VerificaGesto(3);
-        
-        MostraNuovaFreccia();
-    }
+{
+    Debug.Log("ArrowController avviato!");
+    
+    // Trova il componente SwipeDetector
+    swipeDetector = GetComponent<SwipeDetector>();
+    
+    // Trova il componente ImageManager
+    imageManager = GetComponent<ImageManager>();
+    
+    // Collega gli eventi swipe
+    swipeDetector.OnSwipeUp += () => VerificaGesto(0);
+    swipeDetector.OnSwipeDown += () => VerificaGesto(1);
+    swipeDetector.OnSwipeLeft += () => VerificaGesto(2);
+    swipeDetector.OnSwipeRight += () => VerificaGesto(3);
+    
+    MostraNuovaFreccia();
+}
     
     void MostraNuovaFreccia()
 {
@@ -93,11 +97,13 @@ public class ArrowController : MonoBehaviour
     
     frecceMostrate++;
     
-    // Ogni 10 frecce mostra immagine
-    if (frecceMostrate % 10 == 0)
+    // Ogni 3 frecce mostra immagine
+    if (frecceMostrate % 3 == 0)
     {
         Debug.Log($"Completate {frecceMostrate} frecce! Tempo di mostrare un'immagine!");
-    }
+    Debug.Log("Chiamando imageManager.MostraImmagineCasuale()...");
+    imageManager.MostraImmagineCasuale();
+}
     
     // Mostra prossima freccia
     MostraNuovaFreccia();
