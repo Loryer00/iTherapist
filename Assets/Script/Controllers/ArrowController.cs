@@ -36,7 +36,7 @@ public class ArrowController : MonoBehaviour
     MostraNuovaFreccia();
 }
     
-    void MostraNuovaFreccia()
+    public void MostraNuovaFreccia()
 {
     // Ferma l'animazione precedente se esiste
     if (animazioneCorrente != null)
@@ -65,6 +65,28 @@ public class ArrowController : MonoBehaviour
         
         // Avvia l'animazione di movimento
         animazioneCorrente = StartCoroutine(AnimazioneFreccia());
+    }
+}
+
+public void NascondiFreccia()
+{
+    if (frecciaPrefab != null)
+    {
+        frecciaPrefab.SetActive(false);
+    }
+    
+    // Ferma l'animazione
+    if (animazioneCorrente != null)
+    {
+        StopCoroutine(animazioneCorrente);
+    }
+}
+
+public void MostraFreccia()
+{
+    if (frecciaPrefab != null)
+    {
+        frecciaPrefab.SetActive(true);
     }
 }
     
