@@ -1,0 +1,18 @@
+# Unity files
+*.cs text=auto
+*.js text=auto
+*.boo text=auto
+*.compute text=auto
+*.hlsl text=auto
+*.shader text=auto
+
+# Unity YAML
+*.meta text=auto
+*.asset text=auto
+*.unity text=auto
+*.prefab text=auto
+*.mat text=auto
+
+# Other
+*.md text=auto
+*.txt text=auto
