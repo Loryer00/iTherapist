@@ -47,7 +47,7 @@ public class ImageManager : MonoBehaviour
         }
     }
     
-    private System.Collections.IEnumerator LoadImageCoroutine(string path)
+   private System.Collections.IEnumerator LoadImageCoroutine(string path)
 {
     // Nascondi le frecce prima di mostrare l'immagine
     ArrowController arrowController = GetComponent<ArrowController>();
@@ -56,14 +56,38 @@ public class ImageManager : MonoBehaviour
         arrowController.NascondiFreccia();
     }
     
+    if (textureCorrente != null)
+    {
+        Destroy(textureCorrente);
+        textureCorrente = null;
+    }
+    
+    // AGGIUNGI QUESTO: Libera la texture precedente prima di caricarne una nuova
+    if (textureCorrente != null)
+    {
+        Destroy(textureCorrente);
+        textureCorrente = null;
+    }
+    
+    // AGGIUNGI ANCHE QUESTO: Pulisci l'eventuale Image component
+    Image imageComponent = imageDisplay.GetComponent<Image>();
+    if (imageComponent != null)
+    {
+        imageComponent.sprite = null;
+    }
+    
     textureCorrente = NativeGallery.LoadImageAtPath(path, 1024, false);
     
     if (textureCorrente != null)
     {
         selectedImage.texture = textureCorrente;
+        
+        // Calcola e applica l'aspect ratio corretto
+        ImpostaAspectRatioCorretto();
+        
         imageDisplay.SetActive(true);
         
-        Debug.Log("Immagine caricata e mostrata!");
+        Debug.Log("Immagine caricata e mostrata con aspect ratio corretto!");
         
         yield return new WaitForSeconds(tempoVisualizzazione);
         
@@ -101,4 +125,35 @@ public class ImageManager : MonoBehaviour
         
         Debug.Log("Immagine nascosta");
     }
+	
+	private void ImpostaAspectRatioCorretto()
+{
+    if (textureCorrente == null || selectedImage == null) return;
+    
+    // Dimensione target per la dimensione maggiore
+    float targetMaxSize = 1000f;
+    
+    // Ottieni le dimensioni originali dell'immagine
+    float imgWidth = textureCorrente.width;
+    float imgHeight = textureCorrente.height;
+    
+    // Trova la dimensione maggiore
+    float maxDimension = Mathf.Max(imgWidth, imgHeight);
+    
+    // Calcola il fattore di scala per portare la dimensione maggiore a 1000
+    float scaleFactor = targetMaxSize / maxDimension;
+    
+    // Applica il fattore di scala a entrambe le dimensioni
+    float newWidth = imgWidth * scaleFactor;
+    float newHeight = imgHeight * scaleFactor;
+    
+    // Applica le nuove dimensioni al RawImage
+    RectTransform imageRect = selectedImage.GetComponent<RectTransform>();
+    imageRect.sizeDelta = new Vector2(newWidth, newHeight);
+    
+    // Reset UV Rect per essere sicuri
+    selectedImage.uvRect = new Rect(0, 0, 1, 1);
+    
+    Debug.Log($"Dimensioni finali: {newWidth}x{newHeight} (originali: {imgWidth}x{imgHeight}, fattore: {scaleFactor})");
+}
 }

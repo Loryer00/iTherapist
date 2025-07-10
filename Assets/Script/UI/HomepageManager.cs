@@ -15,7 +15,6 @@ public class HomepageManager : MonoBehaviour
     public Button gestioneImmaginiButton;
     public Button chiudiMenuButton;
     
-    private bool menuAperto = false;
     private UIManager uiManager;
     private ArrowController arrowController;
     
@@ -33,10 +32,7 @@ public class HomepageManager : MonoBehaviour
             menuButton.onClick.AddListener(ToggleMenuHomepage);
             
         if (gestioneImmaginiButton != null)
-            gestioneImmaginiButton.onClick.AddListener(ApriGestioneImmagini);
-            
-        if (chiudiMenuButton != null)
-            chiudiMenuButton.onClick.AddListener(ChiudiMenuHomepage);
+            gestioneImmaginiButton.onClick.AddListener(ApriGestioneImmagini);         
         
         // Inizia dalla homepage
         MostraHomepage();
@@ -72,29 +68,22 @@ public class HomepageManager : MonoBehaviour
         // Mostra homepage
         if (homepagePanel != null)
             homepagePanel.SetActive(true);
-            
-        // Chiudi menu se aperto
-        ChiudiMenuHomepage();
     }
     
     public void ToggleMenuHomepage()
     {
-        menuAperto = !menuAperto;
+        /*
+		menuAperto = !menuAperto;
         if (menuImpostazioniHomepage != null)
             menuImpostazioniHomepage.SetActive(menuAperto);
         Debug.Log($"Menu homepage: {(menuAperto ? "Aperto" : "Chiuso")}");
+		*/
+		
+		ApriGestioneImmagini();
     }
-    
-    public void ChiudiMenuHomepage()
-    {
-        menuAperto = false;
-        if (menuImpostazioniHomepage != null)
-            menuImpostazioniHomepage.SetActive(false);
-    }
-    
+        
     public void ApriGestioneImmagini()
     {
-        ChiudiMenuHomepage();
         if (uiManager != null)
         {
             uiManager.ApriGestioneImmagini();
@@ -107,8 +96,6 @@ public class HomepageManager : MonoBehaviour
             homepagePanel.SetActive(true);
             
         if (gamePanel != null)
-            gamePanel.SetActive(false);
-            
-        ChiudiMenuHomepage();
+            gamePanel.SetActive(false);            
     }
 }

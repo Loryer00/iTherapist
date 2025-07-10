@@ -145,7 +145,7 @@ PlayerSettings:
   vrSettings:
     enable360StereoCapture: 0
   isWsaHolographicRemotingEnabled: 0
-  enableFrameTimingStats: 0
+  enableFrameTimingStats: 1
   enableOpenGLProfilerGPURecorders: 1
   useHDRDisplay: 0
   hdrBitDepth: 0
@@ -893,7 +893,7 @@ PlayerSettings:
   embeddedLinuxEnableGamepadInput: 1
   hmiLogStartupTiming: 0
   hmiCpuConfiguration: 
-  apiCompatibilityLevel: 6
+  apiCompatibilityLevel: 3
   activeInputHandler: 0
   windowsGamepadBackendHint: 0
   cloudProjectId: 
