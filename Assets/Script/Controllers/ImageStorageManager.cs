@@ -18,14 +18,14 @@ public class ImageStorageManager : MonoBehaviour
     private List<string> immaginiUsate = new List<string>();
     private string cartellaPersistente;
 	
-[Header("Modalità Cancellazione")]
-public Button buttonModificaImmagini;         // Pulsante per entrare/uscire da modalità cancellazione
-public GameObject prefabPulsanteAggiungi;    // Prefab del pulsante + per aggiungere immagini
-public TextMeshProUGUI testoModifica;        // Testo "MODIFICA"
-public TextMeshProUGUI testoFine;            // Testo "FINE"
+    [Header("Modalità Cancellazione")]
+    public Button buttonModificaImmagini;         // Pulsante per entrare/uscire da modalità cancellazione
+    public GameObject prefabPulsanteAggiungi;    // Prefab del pulsante + per aggiungere immagini
+    public TextMeshProUGUI testoModifica;        // Testo "MODIFICA"
+    public TextMeshProUGUI testoFine;            // Testo "FINE"
 
-private bool modalitaCancellazione = false;
-private float ultimoToggle = 0f;
+    private bool modalitaCancellazione = false;
+    private float ultimoToggle = 0f;
     
     void Start()
     {
@@ -42,10 +42,10 @@ private float ultimoToggle = 0f;
         CaricaListaImmagini();
         AggiornaUI();
 		
-    // Configura il pulsante modalità modifica
-    if (buttonModificaImmagini != null)
-        buttonModificaImmagini.onClick.AddListener(ToggleModalitaCancellazione);
-}
+        // Configura il pulsante modalità modifica
+        if (buttonModificaImmagini != null)
+            buttonModificaImmagini.onClick.AddListener(ToggleModalitaCancellazione);
+    }
     
     public void AggiungiNuovaImmagine()
     {
@@ -74,30 +74,30 @@ private float ultimoToggle = 0f;
     }
     
     private void SalvaImmagine(string percorsoOriginale)
-{
-    try
     {
-        // Genera nome file unico
-        string nomeFile = $"img_{System.DateTime.Now:yyyyMMdd_HHmmss}.jpg";
-        string percorsoDestinazione = Path.Combine(cartellaPersistente, nomeFile);
-        
-        // Leggi i byte direttamente dal file originale
-        byte[] bytesOriginali = File.ReadAllBytes(percorsoOriginale);
-        
-        // Salva direttamente nella cartella dell'app
-        File.WriteAllBytes(percorsoDestinazione, bytesOriginali);
-        
-        // Aggiungi alla lista
-        immaginiSalvate.Add(percorsoDestinazione);
-        
-        Debug.Log($"Immagine salvata: {nomeFile}");
-        AggiornaUI();
+        try
+        {
+            // Genera nome file unico
+            string nomeFile = $"img_{System.DateTime.Now:yyyyMMdd_HHmmss}.jpg";
+            string percorsoDestinazione = Path.Combine(cartellaPersistente, nomeFile);
+            
+            // Leggi i byte direttamente dal file originale
+            byte[] bytesOriginali = File.ReadAllBytes(percorsoOriginale);
+            
+            // Salva direttamente nella cartella dell'app
+            File.WriteAllBytes(percorsoDestinazione, bytesOriginali);
+            
+            // Aggiungi alla lista
+            immaginiSalvate.Add(percorsoDestinazione);
+            
+            Debug.Log($"Immagine salvata: {nomeFile}");
+            AggiornaUI();
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"Errore nel salvare l'immagine: {e.Message}");
+        }
     }
-    catch (System.Exception e)
-    {
-        Debug.LogError($"Errore nel salvare l'immagine: {e.Message}");
-    }
-}
     
     private void CaricaListaImmagini()
     {
@@ -178,261 +178,278 @@ private float ultimoToggle = 0f;
     }
     
     private void AggiornaUI()
-{
-    Debug.Log("=== INIZIO AggiornaUI ===");    
-       
-    // Mostra/nascondi testo placeholder
-    if (testoPlaceholder != null)
     {
-        testoPlaceholder.gameObject.SetActive(immaginiSalvate.Count == 0);
-    }
-    
-    // Pulisci le anteprime esistenti
-    if (areaImmagini != null)
-    {
-        foreach (Transform child in areaImmagini)
+        Debug.Log("=== INIZIO AggiornaUI ===");    
+           
+        // Mostra/nascondi testo placeholder
+        if (testoPlaceholder != null)
         {
-            Destroy(child.gameObject);
+            testoPlaceholder.gameObject.SetActive(immaginiSalvate.Count == 0);
         }
-    }
-    else
-    {
-        Debug.Log("ERRORE: areaImmagini è NULL!");
-        return;
-    }
-    
-    // Crea anteprime delle immagini esistenti
-    if (prefabAnteprima != null && areaImmagini != null)
-    {
-        foreach (string percorsoImmagine in immaginiSalvate)
+        
+        // Pulisci le anteprime esistenti
+        if (areaImmagini != null)
         {
-            GameObject nuovaAnteprima = Instantiate(prefabAnteprima, areaImmagini);
-            
-            // Configura l'immagine
-            Image imageComponent = nuovaAnteprima.GetComponentInChildren<Image>();
-            if (imageComponent != null)
+            foreach (Transform child in areaImmagini)
             {
-                Texture2D textureOriginale = NativeGallery.LoadImageAtPath(percorsoImmagine, 512, false);
-                if (textureOriginale != null)
+                Destroy(child.gameObject);
+            }
+        }
+        else
+        {
+            Debug.Log("ERRORE: areaImmagini è NULL!");
+            return;
+        }
+        
+        // Crea anteprime delle immagini esistenti
+        if (prefabAnteprima != null && areaImmagini != null)
+        {
+            foreach (string percorsoImmagine in immaginiSalvate)
+            {
+                GameObject nuovaAnteprima = Instantiate(prefabAnteprima, areaImmagini);
+                
+                // Configura l'immagine
+                Image imageComponent = nuovaAnteprima.GetComponentInChildren<Image>();
+                if (imageComponent != null)
                 {
-                    Sprite anteprimaSprite = CreaAnteprimaQuadrata(textureOriginale, 150);
-                    if (anteprimaSprite != null)
+                    Texture2D textureOriginale = NativeGallery.LoadImageAtPath(percorsoImmagine, 512, false);
+                    if (textureOriginale != null)
                     {
-                        imageComponent.sprite = anteprimaSprite;
+                        Sprite anteprimaSprite = CreaAnteprimaQuadrata(textureOriginale, 150);
+                        if (anteprimaSprite != null)
+                        {
+                            imageComponent.sprite = anteprimaSprite;
+                        }
+                    }
+                }
+                
+                // Configura il comportamento del pulsante
+                Button buttonAnteprima = nuovaAnteprima.GetComponentInChildren<Button>();
+                if (buttonAnteprima != null)
+                {
+                    string percorsoPerButton = percorsoImmagine;
+                    
+                    if (modalitaCancellazione)
+                    {
+                        // Modalità cancellazione: mostra overlay e cancella al click dell'overlay
+                        AggiungiIconaCancellazione(nuovaAnteprima);
+                        
+                        // Trova il pulsante dell'overlay appena creato
+                        Button[] buttons = nuovaAnteprima.GetComponentsInChildren<Button>();
+                        Button overlayButton = null;
+                        
+                        foreach (Button btn in buttons)
+                        {
+                            if (btn.name != buttonAnteprima.name)
+                            {
+                                overlayButton = btn;
+                                break;
+                            }
+                        }
+                        
+                        if (overlayButton != null)
+                        {
+                            overlayButton.onClick.AddListener(() => {
+                                if (Application.platform == RuntimePlatform.Android)
+                                {
+                                    AndroidJavaClass unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
+                                    AndroidJavaObject activity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
+                                    AndroidJavaClass toast = new AndroidJavaClass("android.widget.Toast");
+                                    AndroidJavaObject toastInstance = toast.CallStatic<AndroidJavaObject>("makeText", activity, "Immagine cancellata", 0);
+                                    toastInstance.Call("show");
+                                }
+                                RimuoviImmagine(percorsoPerButton);
+                            });
+                        }
+                        
+                        // Il pulsante dell'immagine originale non fa nulla in modalità cancellazione
+                        buttonAnteprima.onClick.RemoveAllListeners();
+                    }
+                    else
+                    {
+                        // Modalità normale: mostra immagine piena al click
+                        buttonAnteprima.onClick.RemoveAllListeners();
+                        buttonAnteprima.onClick.AddListener(() => {
+                            MostraImmaginePienaSchermata(percorsoPerButton);
+                        });
                     }
                 }
             }
-            
-            // Configura il comportamento del pulsante
-            Button buttonAnteprima = nuovaAnteprima.GetComponentInChildren<Button>();
-            if (buttonAnteprima != null)
-            {
-                string percorsoPerButton = percorsoImmagine;
-                
-                if (modalitaCancellazione)
-{
-    // Modalità cancellazione: mostra X e cancella al click
-    AggiungiIconaCancellazione(nuovaAnteprima);
-    buttonAnteprima.onClick.RemoveAllListeners();
-    buttonAnteprima.onClick.AddListener(() => {
-        if (Application.platform == RuntimePlatform.Android)
-        {
-            AndroidJavaClass unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
-            AndroidJavaObject activity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
-            AndroidJavaClass toast = new AndroidJavaClass("android.widget.Toast");
-            AndroidJavaObject toastInstance = toast.CallStatic<AndroidJavaObject>("makeText", activity, "Immagine cancellata", 0);
-            toastInstance.Call("show");
         }
-        RimuoviImmagine(percorsoPerButton);
-    });
-}
-                else
-                {
-                    // Modalità normale: mostra immagine piena al click
-                    buttonAnteprima.onClick.RemoveAllListeners();
-                    buttonAnteprima.onClick.AddListener(() => {
-                        MostraImmaginePienaSchermata(percorsoPerButton);
-                    });
-                }
+        
+        // Aggiungi il pulsante "+" per aggiungere nuove immagini (solo se non in modalità cancellazione)
+        if (!modalitaCancellazione && prefabPulsanteAggiungi != null && areaImmagini != null)
+        {
+            GameObject pulsanteAggiungi = Instantiate(prefabPulsanteAggiungi, areaImmagini);
+            Button buttonAggiungi = pulsanteAggiungi.GetComponentInChildren<Button>();
+            if (buttonAggiungi != null)
+            {
+                buttonAggiungi.onClick.AddListener(AggiungiNuovaImmagine);
             }
         }
+        
+        Debug.Log($"=== FINE AggiornaUI - {immaginiSalvate.Count} immagini caricate ===");
     }
-    
-    // Aggiungi il pulsante "+" per aggiungere nuove immagini (solo se non in modalità cancellazione)
-    if (!modalitaCancellazione && prefabPulsanteAggiungi != null && areaImmagini != null)
-    {
-        GameObject pulsanteAggiungi = Instantiate(prefabPulsanteAggiungi, areaImmagini);
-        Button buttonAggiungi = pulsanteAggiungi.GetComponentInChildren<Button>();
-        if (buttonAggiungi != null)
-        {
-            buttonAggiungi.onClick.AddListener(AggiungiNuovaImmagine);
-        }
-    }
-    
-    Debug.Log($"=== FINE AggiornaUI - {immaginiSalvate.Count} immagini caricate ===");
-}
 
-private void AggiungiIconaCancellazione(GameObject anteprima)
-{
-    // Crea un'icona X per la cancellazione
-    GameObject iconaX = new GameObject("IconaX");
-    iconaX.transform.SetParent(anteprima.transform, false);
-    
-    // Posiziona in alto a destra - INGRANDITO
-    RectTransform rectX = iconaX.AddComponent<RectTransform>();
-    rectX.sizeDelta = new Vector2(45, 45); // INGRANDITO da 35 a 45
-    rectX.anchorMin = new Vector2(1, 1);
-    rectX.anchorMax = new Vector2(1, 1);
-    rectX.anchoredPosition = new Vector2(-5, -5);
-    
-    // Aggiungi l'immagine di sfondo bianco
-    Image imageX = iconaX.AddComponent<Image>();
-    imageX.color = Color.white;
-    imageX.sprite = null; // Sfondo bianco solido
-    
-    // Aggiungi bordo nero sottile
-    Outline outline = iconaX.AddComponent<Outline>();
-    outline.effectColor = Color.black;
-    outline.effectDistance = new Vector2(1, 1);
-    
-    // Crea una X nera con testo - SOSTITUITA CON X
-    GameObject testoX = new GameObject("TestoX");
-    testoX.transform.SetParent(iconaX.transform, false);
-    
-    TextMeshProUGUI textX = testoX.AddComponent<TextMeshProUGUI>();
-    textX.text = "✕"; // X più bella
-    textX.fontSize = 24; // INGRANDITO da 20 a 24
-    textX.color = Color.black;
-    textX.alignment = TextAlignmentOptions.Center;
-    textX.fontStyle = FontStyles.Bold;
-    
-    RectTransform rectTestoX = testoX.GetComponent<RectTransform>();
-    rectTestoX.sizeDelta = new Vector2(45, 45); // INGRANDITO
-    rectTestoX.anchoredPosition = Vector2.zero;
-    
-    // Rendi il pulsante cliccabile
-    Button buttonX = iconaX.AddComponent<Button>();
-    buttonX.targetGraphic = imageX;
-}
+    private void AggiungiIconaCancellazione(GameObject anteprima)
+    {
+        // Crea un overlay nero semi-trasparente che copre tutta l'immagine
+        GameObject overlayNero = new GameObject("OverlayCancellazione");
+        overlayNero.transform.SetParent(anteprima.transform, false);
+        
+        // Posiziona l'overlay per coprire tutta l'anteprima
+        RectTransform rectOverlay = overlayNero.AddComponent<RectTransform>();
+        rectOverlay.anchorMin = Vector2.zero;
+        rectOverlay.anchorMax = Vector2.one;
+        rectOverlay.sizeDelta = Vector2.zero;
+        rectOverlay.anchoredPosition = Vector2.zero;
+        
+        // Aggiungi sfondo nero semi-trasparente
+        Image imageOverlay = overlayNero.AddComponent<Image>();
+        imageOverlay.color = new Color(0, 0, 0, 0.7f); // Nero con 70% di opacità
+        
+        // Crea la X bianca al centro
+        GameObject testoX = new GameObject("TestoX");
+        testoX.transform.SetParent(overlayNero.transform, false);
+        
+        TextMeshProUGUI textX = testoX.AddComponent<TextMeshProUGUI>();
+        textX.text = "X";
+        textX.fontSize = 40; // X grande e ben visibile
+        textX.color = Color.white;
+        textX.alignment = TextAlignmentOptions.Center;
+        textX.fontStyle = FontStyles.Bold;
+        
+        // Posiziona la X al centro dell'overlay
+        RectTransform rectTestoX = testoX.GetComponent<RectTransform>();
+        rectTestoX.anchorMin = Vector2.zero;
+        rectTestoX.anchorMax = Vector2.one;
+        rectTestoX.sizeDelta = Vector2.zero;
+        rectTestoX.anchoredPosition = Vector2.zero;
+        
+        // Rendi tutto l'overlay cliccabile per cancellare
+        Button buttonOverlay = overlayNero.AddComponent<Button>();
+        buttonOverlay.targetGraphic = imageOverlay;
+    }
     		
     public int NumeroImmaginiCaricate()
     {
         return immaginiSalvate.Count;
     }
 	
-public void ToggleModalitaCancellazione()
-{
-    // Debounce: evita chiamate multiple troppo rapide
-    if (Time.time - ultimoToggle < 0.5f)
+    public void ToggleModalitaCancellazione()
     {
-        Debug.Log("Toggle troppo rapido - ignorato");
-        return;
-    }
-    ultimoToggle = Time.time;
-    
-    modalitaCancellazione = !modalitaCancellazione;
-    
-    Debug.Log($"METODO CHIAMATO! Modalità: {modalitaCancellazione}");
-    
-    // PRIMA chiama AggiornaUI per gestire le X di cancellazione
-    AggiornaUI();
-    
-    // POI usa una Coroutine per cambiare il testo dopo un piccolo delay
-    StartCoroutine(CambiaTestoPulsanteDopoDelay());
-}
-
-private System.Collections.IEnumerator CambiaTestoPulsanteDopoDelay()
-{
-    // Aspetta un frame per essere sicuri che AggiornaUI abbia finito
-    yield return null;
-    
-    TextMeshProUGUI[] tuttiITesti = FindObjectsOfType<TextMeshProUGUI>();
-    
-    // Cerca specificatamente il pulsante MODIFICA
-    for (int i = 0; i < tuttiITesti.Length; i++)
-    {
-        if (tuttiITesti[i].text == "MODIFICA" || tuttiITesti[i].text == "FINE")
+        // Debounce: evita chiamate multiple troppo rapide
+        if (Time.time - ultimoToggle < 0.5f)
         {
-            string nuovoTesto = modalitaCancellazione ? "FINE" : "MODIFICA";
-            tuttiITesti[i].text = nuovoTesto;
-            Debug.Log($"Cambiato pulsante '{tuttiITesti[i].text}' in: '{nuovoTesto}' al numero {i}");
-            break; // Ferma dopo aver trovato il primo
+            Debug.Log("Toggle troppo rapido - ignorato");
+            return;
+        }
+        ultimoToggle = Time.time;
+        
+        modalitaCancellazione = !modalitaCancellazione;
+        
+        Debug.Log($"METODO CHIAMATO! Modalità: {modalitaCancellazione}");
+        
+        // PRIMA chiama AggiornaUI per gestire le X di cancellazione
+        AggiornaUI();
+        
+        // POI usa una Coroutine per cambiare il testo dopo un piccolo delay
+        StartCoroutine(CambiaTestoPulsanteDopoDelay());
+    }
+
+    private System.Collections.IEnumerator CambiaTestoPulsanteDopoDelay()
+    {
+        // Aspetta un frame per essere sicuri che AggiornaUI abbia finito
+        yield return null;
+        
+        TextMeshProUGUI[] tuttiITesti = FindObjectsOfType<TextMeshProUGUI>();
+        
+        // Cerca specificatamente il pulsante MODIFICA
+        for (int i = 0; i < tuttiITesti.Length; i++)
+        {
+            if (tuttiITesti[i].text == "MODIFICA" || tuttiITesti[i].text == "FINE")
+            {
+                string nuovoTesto = modalitaCancellazione ? "FINE" : "MODIFICA";
+                tuttiITesti[i].text = nuovoTesto;
+                Debug.Log($"Cambiato pulsante '{tuttiITesti[i].text}' in: '{nuovoTesto}' al numero {i}");
+                break; // Ferma dopo aver trovato il primo
+            }
         }
     }
-}
-private void MostraImmaginePienaSchermata(string percorsoImmagine)
-{
-    Debug.Log($"Mostrando immagine a schermo pieno: {percorsoImmagine}");
     
-    // Qui userai l'ImageManager esistente per mostrare l'immagine
-    ImageManager imageManager = GetComponent<ImageManager>();
-    if (imageManager != null)
+    private void MostraImmaginePienaSchermata(string percorsoImmagine)
     {
-        // Usa il sistema esistente per mostrare l'immagine
-        StartCoroutine(MostraImmagineTempCoroutine(percorsoImmagine));
-    }
-}
-
-private System.Collections.IEnumerator MostraImmagineTempCoroutine(string percorso)
-{
-    ImageManager imageManager = GetComponent<ImageManager>();
-    if (imageManager != null)
-    {
-        // Carica la texture
-        Texture2D texture = NativeGallery.LoadImageAtPath(percorso, 1024, false);
-        if (texture != null)
+        Debug.Log($"Mostrando immagine a schermo pieno: {percorsoImmagine}");
+        
+        // Qui userai l'ImageManager esistente per mostrare l'immagine
+        ImageManager imageManager = GetComponent<ImageManager>();
+        if (imageManager != null)
         {
-            imageManager.selectedImage.texture = texture;
-// Calcola l'aspect ratio corretto
-float aspectRatio = (float)texture.width / texture.height;
-RectTransform rectTransform = imageManager.selectedImage.GetComponent<RectTransform>();
-if (aspectRatio > 1) // Immagine landscape
-{
-    rectTransform.sizeDelta = new Vector2(800, 800 / aspectRatio);
-}
-else // Immagine portrait
-{
-    rectTransform.sizeDelta = new Vector2(600 * aspectRatio, 600);
-}
-            imageManager.imageDisplay.SetActive(true);
-            
-            // Aspetta 5 secondi o fino a quando l'utente tocca
-            float tempoInizio = Time.time;
-            while (Time.time - tempoInizio < 5f && !Input.GetMouseButtonDown(0))
-            {
-                yield return null;
-            }
-            
-            // Nascondi l'immagine
-            imageManager.imageDisplay.SetActive(false);
+            // Usa il sistema esistente per mostrare l'immagine
+            StartCoroutine(MostraImmagineTempCoroutine(percorsoImmagine));
+        }
+    }
+
+    private System.Collections.IEnumerator MostraImmagineTempCoroutine(string percorso)
+    {
+        ImageManager imageManager = GetComponent<ImageManager>();
+        if (imageManager != null)
+        {
+            // Carica la texture
+            Texture2D texture = NativeGallery.LoadImageAtPath(percorso, 1024, false);
             if (texture != null)
             {
-                Destroy(texture);
+                imageManager.selectedImage.texture = texture;
+                // Calcola l'aspect ratio corretto
+                float aspectRatio = (float)texture.width / texture.height;
+                RectTransform rectTransform = imageManager.selectedImage.GetComponent<RectTransform>();
+                if (aspectRatio > 1) // Immagine landscape
+                {
+                    rectTransform.sizeDelta = new Vector2(800, 800 / aspectRatio);
+                }
+                else // Immagine portrait
+                {
+                    rectTransform.sizeDelta = new Vector2(600 * aspectRatio, 600);
+                }
+                imageManager.imageDisplay.SetActive(true);
+                
+                // Aspetta 5 secondi o fino a quando l'utente tocca
+                float tempoInizio = Time.time;
+                while (Time.time - tempoInizio < 5f && !Input.GetMouseButtonDown(0))
+                {
+                    yield return null;
+                }
+                
+                // Nascondi l'immagine
+                imageManager.imageDisplay.SetActive(false);
+                if (texture != null)
+                {
+                    Destroy(texture);
+                }
             }
         }
     }
-}
 	
-	private Sprite CreaAnteprimaQuadrata(Texture2D textureOriginale, int dimensioneQuadrata)
-{
-    if (textureOriginale == null) return null;
-    
-    int larghezzaOriginale = textureOriginale.width;
-    int altezzaOriginale = textureOriginale.height;
-    
-    // Trova la dimensione più piccola per determinare il lato del quadrato di crop
-    int latoCrop = Mathf.Min(larghezzaOriginale, altezzaOriginale);
-    
-    // Calcola l'offset per centrare il crop
-    int offsetX = (larghezzaOriginale - latoCrop) / 2;
-    int offsetY = (altezzaOriginale - latoCrop) / 2;
-    
-    Debug.Log($"Crop: {larghezzaOriginale}x{altezzaOriginale} -> quadrato {latoCrop}x{latoCrop}, offset: ({offsetX},{offsetY})");
-    
-    // Crea direttamente uno Sprite con il crop centrato
-    Rect cropRect = new Rect(offsetX, offsetY, latoCrop, latoCrop);
-    Sprite spriteQuadrato = Sprite.Create(textureOriginale, cropRect, new Vector2(0.5f, 0.5f));
-    
-    return spriteQuadrato;
-}
+    private Sprite CreaAnteprimaQuadrata(Texture2D textureOriginale, int dimensioneQuadrata)
+    {
+        if (textureOriginale == null) return null;
+        
+        int larghezzaOriginale = textureOriginale.width;
+        int altezzaOriginale = textureOriginale.height;
+        
+        // Trova la dimensione più piccola per determinare il lato del quadrato di crop
+        int latoCrop = Mathf.Min(larghezzaOriginale, altezzaOriginale);
+        
+        // Calcola l'offset per centrare il crop
+        int offsetX = (larghezzaOriginale - latoCrop) / 2;
+        int offsetY = (altezzaOriginale - latoCrop) / 2;
+        
+        Debug.Log($"Crop: {larghezzaOriginale}x{altezzaOriginale} -> quadrato {latoCrop}x{latoCrop}, offset: ({offsetX},{offsetY})");
+        
+        // Crea direttamente uno Sprite con il crop centrato
+        Rect cropRect = new Rect(offsetX, offsetY, latoCrop, latoCrop);
+        Sprite spriteQuadrato = Sprite.Create(textureOriginale, cropRect, new Vector2(0.5f, 0.5f));
+        
+        return spriteQuadrato;
+    }
 }
