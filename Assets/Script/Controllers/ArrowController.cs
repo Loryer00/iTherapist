@@ -27,7 +27,10 @@ public class ArrowController : MonoBehaviour
     [Header("Animazione Freccia")]
     public float ampiezzaMovimento = 80f; // Pixel di movimento
     public float velocitaAnimazione = 6f; // Velocità animazione
-    
+
+    [Header("Referencias UI")]
+    public GameObject calendarPanel; // Trascinaci il CalendarPanel dall'Inspector
+
     private int frecceMostrate = 0;
     private int direzioneCorrente;
     private Coroutine animazioneCorrente;
@@ -63,9 +66,15 @@ public class ArrowController : MonoBehaviour
     {
         GestisciInputUnificato();
     }
-    
+
     private void GestisciInputUnificato()
     {
+        // Non gestire input se il calendario è aperto
+        if (calendarPanel != null && calendarPanel.activeInHierarchy)
+        {
+            return;
+        }
+
         // Touch/Mouse iniziato
         if (Input.GetMouseButtonDown(0))
         {
@@ -303,16 +312,23 @@ public class ArrowController : MonoBehaviour
     {
         Debug.Log("Gesto corretto!");
         
-        // Ferma l'animazione precedente
-        if (animazioneCorrente != null)
-        {
-            StopCoroutine(animazioneCorrente);
-        }
-        
-        // Vibrazione
-        Handheld.Vibrate();
-        
-        frecceMostrate++;
+    // Registra lo swipe nelle statistiche
+    StatisticsManager statsManager = FindObjectOfType<StatisticsManager>();
+    if (statsManager != null)
+    {
+        statsManager.RecordSwipe();
+    }
+    
+    // Ferma l'animazione precedente
+    if (animazioneCorrente != null)
+    {
+        StopCoroutine(animazioneCorrente);
+    }
+    
+    // Vibrazione
+    Handheld.Vibrate();
+    
+    frecceMostrate++;
         
         // Ogni N frecce mostra immagine
         if (frecceMostrate % freccePerImmagine == 0)
