@@ -78,34 +78,26 @@ public class StatisticsManager : MonoBehaviour
             Debug.Log($"Sessione iniziata: {currentDate}");
         }
     }
-    
+
     public void EndSession()
     {
         if (sessionActive)
         {
             float sessionDuration = Time.time - sessionStartTime;
-            
+
             // Salva solo se la sessione è durata almeno 5 secondi
             if (sessionDuration >= 5f)
             {
                 SaveSessionData(sessionDuration);
-                
-                if (Application.platform == RuntimePlatform.Android)
-                {
-                    AndroidJavaClass unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
-                    AndroidJavaObject activity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
-                    AndroidJavaClass toast = new AndroidJavaClass("android.widget.Toast");
-                    string message = $"Sessione completata: {sessionSwipes} swipe in {Mathf.RoundToInt(sessionDuration)}s";
-                    AndroidJavaObject toastInstance = toast.CallStatic<AndroidJavaObject>("makeText", activity, message, 1);
-                    toastInstance.Call("show");
-                }
+
+                // RIMOSSO IL TOAST "Sessione completata"
             }
-            
+
             sessionActive = false;
             Debug.Log($"Sessione terminata: {sessionSwipes} swipe, {sessionDuration:F1} secondi");
         }
     }
-    
+
     public void RecordSwipe()
     {
         if (sessionActive)
@@ -197,17 +189,21 @@ public class StatisticsManager : MonoBehaviour
     {
         return stats;
     }
-    
+
     public DayStatistics GetDayStatistics(string date)
     {
         foreach (var day in stats.dailyStats)
         {
             if (day.date == date)
+            {
+                Debug.Log($"Trovati dati per {date}: {day.swipeCount} swipe");
                 return day;
+            }
         }
+        Debug.Log($"Nessun dato trovato per {date}");
         return null; // Nessun dato per questo giorno
     }
-    
+
     public string GetFormattedTotalTime()
     {
         int totalMinutes = Mathf.RoundToInt(stats.totalTime / 60f);
@@ -222,8 +218,12 @@ public class StatisticsManager : MonoBehaviour
 
     public void ResetAllStatistics()
     {
+        // Reset tutti i dati
         stats = new StatisticsData();
+
+        // Salva il file vuoto
         SaveStatistics();
+
         Debug.Log("Tutte le statistiche sono state resettate");
     }
 }

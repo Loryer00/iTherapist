@@ -23,6 +23,8 @@ public class CalendarUI : MonoBehaviour
     public GameObject dayDetailsArea;
     public TextMeshProUGUI selectedDayTitle;
     public TextMeshProUGUI selectedDayContent;
+    public TextMeshProUGUI daySwipesText;
+    public TextMeshProUGUI dayTimeText;
 
     [Header("Reset Statistics")]
     public Button resetStatisticsButton;
@@ -33,7 +35,9 @@ public class CalendarUI : MonoBehaviour
     private Button selectedButton = null;
 
     private float tempoAperturaCalendario = 0f;
-    private float delayChiusura = 0.5f;
+    private float delayChiusura = 1.5f;
+
+    private Coroutine resetCoroutine = null;
 
     void Start()
     {
@@ -118,20 +122,60 @@ public class CalendarUI : MonoBehaviour
         if (calendarPanel != null)
         {
             calendarPanel.SetActive(true);
-            tempoAperturaCalendario = Time.time; // Segna il momento di apertura
+            tempoAperturaCalendario = Time.time;
+            delayChiusura = 2f;
             UpdateGlobalStatistics();
             GenerateCalendar();
 
-            // Nascondi area dettagli all'apertura
+            // MOSTRA area dettagli all'apertura
             if (dayDetailsArea != null)
-                dayDetailsArea.SetActive(false);
+                dayDetailsArea.SetActive(true);
 
-            // Reset testo di default
-            if (selectedDayTitle != null)
-                selectedDayTitle.text = "Seleziona un giorno";
-            if (selectedDayContent != null)
-                selectedDayContent.text = "";
+            // SELEZIONA AUTOMATICAMENTE IL GIORNO CORRENTE
+            SelectTodayAutomatically();
         }
+    }
+
+    private void SelectTodayAutomatically()
+    {
+        DateTime today = DateTime.Now;
+
+        // Controlla se oggi è nel mese correntemente visualizzato
+        if (today.Year == currentMonth.Year && today.Month == currentMonth.Month)
+        {
+            int todayDay = today.Day;
+
+            // Trova il pulsante del giorno corrente
+            foreach (Button dayButton in dayButtons)
+            {
+                if (dayButton != null)
+                {
+                    TextMeshProUGUI dayText = dayButton.GetComponentInChildren<TextMeshProUGUI>();
+                    if (dayText != null && int.TryParse(dayText.text, out int buttonDay))
+                    {
+                        if (buttonDay == todayDay)
+                        {
+                            // Trovato il pulsante di oggi - selezionalo automaticamente
+                            string todayDateString = today.ToString("yyyy-MM-dd");
+                            ShowDayDetails(todayDateString, dayButton);
+
+                            Debug.Log($"Giorno corrente selezionato automaticamente: {todayDateString}");
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+
+        // Se oggi non è nel mese corrente, mostra comunque i valori di default
+        if (selectedDayTitle != null)
+            selectedDayTitle.text = "Seleziona un giorno";
+        if (selectedDayContent != null)
+            selectedDayContent.text = "";
+        if (daySwipesText != null)
+            daySwipesText.text = "Swipe del giorno: ---";
+        if (dayTimeText != null)
+            dayTimeText.text = "Tempo del giorno: ---";
     }
 
     void Update()
@@ -195,6 +239,22 @@ public class CalendarUI : MonoBehaviour
 
         if (dayDetailsArea != null)
             dayDetailsArea.SetActive(false);
+
+        // FERMA EVENTUALI RESET IN CORSO
+        if (resetCoroutine != null)
+        {
+            StopCoroutine(resetCoroutine);
+            resetCoroutine = null;
+
+            if (Application.platform == RuntimePlatform.Android)
+            {
+                AndroidJavaClass unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
+                AndroidJavaObject activity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
+                AndroidJavaClass toast = new AndroidJavaClass("android.widget.Toast");
+                AndroidJavaObject toastInstance = toast.CallStatic<AndroidJavaObject>("makeText", activity, "Reset annullato - calendario chiuso", 0);
+                toastInstance.Call("show");
+            }
+        }
     }
 
     private void ChangeMonth(int direction)
@@ -202,15 +262,8 @@ public class CalendarUI : MonoBehaviour
         currentMonth = currentMonth.AddMonths(direction);
         GenerateCalendar();
 
-        // Nascondi dettagli quando cambi mese
-        if (dayDetailsArea != null)
-            dayDetailsArea.SetActive(false);
-        selectedButton = null;
-
-        if (selectedDayTitle != null)
-            selectedDayTitle.text = "Seleziona un giorno";
-        if (selectedDayContent != null)
-            selectedDayContent.text = "";
+        // Prova a selezionare oggi se è nel nuovo mese
+        SelectTodayAutomatically();
     }
 
     private void GenerateCalendar()
@@ -324,7 +377,6 @@ public class CalendarUI : MonoBehaviour
             Image prevButtonImage = selectedButton.GetComponent<Image>();
             if (prevButtonImage != null)
             {
-                // Ottieni la data del pulsante precedente
                 string prevDateString = GetDateFromButton(selectedButton);
 
                 if (!string.IsNullOrEmpty(prevDateString))
@@ -333,12 +385,10 @@ public class CalendarUI : MonoBehaviour
 
                     if (prevStats != null && prevStats.swipeCount > 0)
                     {
-                        // Aveva dati: torna al blu chiaro
                         prevButtonImage.color = new Color(0.573f, 0.722f, 0.945f, 1f);
                     }
                     else
                     {
-                        // Non aveva dati: torna al grigio
                         prevButtonImage.color = new Color(0.7f, 0.7f, 0.7f, 1f);
                     }
                 }
@@ -350,10 +400,10 @@ public class CalendarUI : MonoBehaviour
         Image currentButtonImage = clickedButton.GetComponent<Image>();
         if (currentButtonImage != null)
         {
-            currentButtonImage.color = Color.white; // Bianco per selezione
+            currentButtonImage.color = Color.white;
         }
 
-        // Resto del codice per mostrare i dettagli rimane uguale
+        // OTTIENI I DATI SPECIFICI DEL GIORNO SELEZIONATO
         DayStatistics dayStats = statsManager.GetDayStatistics(dateString);
 
         DateTime date = DateTime.Parse(dateString);
@@ -362,53 +412,45 @@ public class CalendarUI : MonoBehaviour
         if (selectedDayTitle != null)
             selectedDayTitle.text = formattedDate;
 
-        string content = "";
-
+        // AGGIORNA SOLO I CAMPI SPECIFICI CHE HAI CREATO
         if (dayStats != null && dayStats.swipeCount > 0)
         {
-            content += $"Swipe eseguiti: {dayStats.swipeCount}\n\n";
+            // Aggiorna swipe del giorno
+            if (daySwipesText != null)
+                daySwipesText.text = $"Swipe del giorno: {dayStats.swipeCount}";
 
-            int totalMinutes = Mathf.RoundToInt(dayStats.sessionTime / 60f);
-            if (totalMinutes > 0)
+            // Aggiorna tempo del giorno
+            if (dayTimeText != null)
             {
-                int hours = totalMinutes / 60;
-                int minutes = totalMinutes % 60;
-
-                if (hours > 0)
-                    content += $"Tempo totale: {hours}h {minutes}m\n\n";
-                else
-                    content += $"Tempo totale: {minutes}m\n\n";
-            }
-            else
-            {
-                content += $"Tempo totale: {Mathf.RoundToInt(dayStats.sessionTime)}s\n\n";
-            }
-
-            content += $"Sessioni: {dayStats.sessionDurations.Count}\n\n";
-
-            if (dayStats.sessionDurations.Count > 0)
-            {
-                float avgDuration = 0f;
-                foreach (float duration in dayStats.sessionDurations)
+                int totalMinutes = Mathf.RoundToInt(dayStats.sessionTime / 60f);
+                if (totalMinutes > 0)
                 {
-                    avgDuration += duration;
+                    int hours = totalMinutes / 60;
+                    int minutes = totalMinutes % 60;
+                    if (hours > 0)
+                        dayTimeText.text = $"Tempo del giorno: {hours}h {minutes}m";
+                    else
+                        dayTimeText.text = $"Tempo del giorno: {minutes}m";
                 }
-                avgDuration /= dayStats.sessionDurations.Count;
-
-                int avgMinutes = Mathf.RoundToInt(avgDuration / 60f);
-                if (avgMinutes > 0)
-                    content += $"Durata media: {avgMinutes}m";
                 else
-                    content += $"Durata media: {Mathf.RoundToInt(avgDuration)}s";
+                {
+                    dayTimeText.text = $"Tempo del giorno: {Mathf.RoundToInt(dayStats.sessionTime)}s";
+                }
             }
         }
         else
         {
-            content = "Nessuna attività registrata per questo giorno.";
+            // NESSUN DATO PER QUESTO GIORNO
+            if (daySwipesText != null)
+                daySwipesText.text = "Swipe del giorno: ---";
+
+            if (dayTimeText != null)
+                dayTimeText.text = "Tempo del giorno: ---";
         }
 
+        // NON toccare selectedDayContent - lascialo vuoto o con un testo fisso
         if (selectedDayContent != null)
-            selectedDayContent.text = content;
+            selectedDayContent.text = ""; // Vuoto per evitare testi casuali
 
         dayDetailsArea.SetActive(true);
     }
@@ -434,23 +476,22 @@ public class CalendarUI : MonoBehaviour
 
         StatisticsData stats = statsManager.GetStatistics();
 
+        // QUESTE sono le statistiche GLOBALI (sempre visibili in fondo)
         if (totalSwipesText != null)
             totalSwipesText.text = $"Swipe totali: {stats.totalSwipes}";
 
         if (totalTimeText != null)
         {
-            StatisticsData statisticsData = statsManager.GetStatistics();
-            int totalMinutes = Mathf.RoundToInt(statisticsData.totalTime / 60f);
+            int totalMinutes = Mathf.RoundToInt(stats.totalTime / 60f);
             int hours = totalMinutes / 60;
             int minutes = totalMinutes % 60;
-            int seconds = Mathf.RoundToInt(statisticsData.totalTime % 60f);
 
             if (hours > 0)
-                totalTimeText.text = $"Tempo totale: {hours}h {minutes}m {seconds}s";
+                totalTimeText.text = $"Tempo totale: {hours}h {minutes}m";
             else if (minutes > 0)
-                totalTimeText.text = $"Tempo totale: {minutes}m {seconds}s";
+                totalTimeText.text = $"Tempo totale: {minutes}m";
             else
-                totalTimeText.text = $"Tempo totale: {seconds}s";
+                totalTimeText.text = $"Tempo totale: {Mathf.RoundToInt(stats.totalTime)}s";
         }
 
         if (totalDaysText != null)
@@ -459,48 +500,128 @@ public class CalendarUI : MonoBehaviour
         Debug.Log($"Statistiche globali aggiornate: {stats.totalSwipes} swipe, {stats.totalDays} giorni");
     }
 
-     private void ShowResetConfirmation()
+    private void ShowResetConfirmation()
+    {
+        // Ferma eventuali reset in corso
+        if (resetCoroutine != null)
+        {
+            StopCoroutine(resetCoroutine);
+            resetCoroutine = null;
+        }
+
+        // Avvia solo se il calendario è aperto
+        if (calendarPanel != null && calendarPanel.activeInHierarchy)
+        {
+            resetCoroutine = StartCoroutine(HandleResetConfirmation());
+        }
+    }
+
+    private System.Collections.IEnumerator HandleResetConfirmation()
     {
         if (Application.platform == RuntimePlatform.Android)
         {
             AndroidJavaClass unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
             AndroidJavaObject activity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
             AndroidJavaClass toast = new AndroidJavaClass("android.widget.Toast");
-            AndroidJavaObject toastInstance = toast.CallStatic<AndroidJavaObject>("makeText", activity, "Tieni premuto per 3 secondi per resettare le statistiche", 1);
+            AndroidJavaObject toastInstance = toast.CallStatic<AndroidJavaObject>("makeText", activity, "Tieni premuto RESET per 3 secondi per confermare", 1);
             toastInstance.Call("show");
         }
 
-        StartCoroutine(CheckLongPress());
-    }
-
-    private System.Collections.IEnumerator CheckLongPress()
-    {
         float pressTime = 0f;
+        bool buttonPressed = false;
+        bool resetCompleted = false;
 
-        while (Input.GetMouseButton(0) && pressTime < 3f)
+        // Aspetta che il pulsante venga premuto
+        while (!buttonPressed && !resetCompleted && calendarPanel != null && calendarPanel.activeInHierarchy)
         {
-            pressTime += Time.deltaTime;
+            if (Input.GetMouseButton(0))
+            {
+                buttonPressed = true;
+                pressTime = 0f;
+            }
             yield return null;
+        }
+
+        // Controlla se il calendario è ancora aperto
+        if (calendarPanel == null || !calendarPanel.activeInHierarchy)
+        {
+            resetCoroutine = null;
+            yield break; // Esci dalla coroutine
+        }
+
+        // Ora conta i 3 secondi mentre il pulsante è premuto
+        while (buttonPressed && pressTime < 3f && !resetCompleted && calendarPanel != null && calendarPanel.activeInHierarchy)
+        {
+            if (Input.GetMouseButton(0))
+            {
+                pressTime += Time.deltaTime;
+
+                // Debug per vedere il progresso
+                if (Application.platform == RuntimePlatform.Android && Mathf.RoundToInt(pressTime) != Mathf.RoundToInt(pressTime - Time.deltaTime))
+                {
+                    AndroidJavaClass unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
+                    AndroidJavaObject activity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
+                    AndroidJavaClass toast = new AndroidJavaClass("android.widget.Toast");
+                    AndroidJavaObject progressToast = toast.CallStatic<AndroidJavaObject>("makeText", activity, $"Reset in {3 - Mathf.RoundToInt(pressTime)} secondi...", 0);
+                    progressToast.Call("show");
+                }
+            }
+            else
+            {
+                // Pulsante rilasciato troppo presto
+                buttonPressed = false;
+                if (Application.platform == RuntimePlatform.Android)
+                {
+                    AndroidJavaClass unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
+                    AndroidJavaObject activity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
+                    AndroidJavaClass toast = new AndroidJavaClass("android.widget.Toast");
+                    AndroidJavaObject cancelToast = toast.CallStatic<AndroidJavaObject>("makeText", activity, "Reset annullato - pulsante rilasciato", 0);
+                    cancelToast.Call("show");
+                }
+                resetCompleted = true;
+            }
+            yield return null;
+        }
+
+        // Controlla di nuovo se il calendario è ancora aperto
+        if (calendarPanel == null || !calendarPanel.activeInHierarchy)
+        {
+            resetCoroutine = null;
+            yield break;
         }
 
         if (pressTime >= 3f)
         {
+            // Reset confermato
+            if (Application.platform == RuntimePlatform.Android)
+            {
+                AndroidJavaClass unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
+                AndroidJavaObject activity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
+                AndroidJavaClass toast = new AndroidJavaClass("android.widget.Toast");
+                AndroidJavaObject confirmToast = toast.CallStatic<AndroidJavaObject>("makeText", activity, "Reset confermato!", 1);
+                confirmToast.Call("show");
+            }
+
+            yield return new WaitForSeconds(0.5f);
             ResetAllStatistics();
         }
+
+        // Reset della variabile coroutine
+        resetCoroutine = null;
     }
 
     private void ResetAllStatistics()
     {
         if (statsManager != null)
         {
-            statsManager.ResetAllStatistics();
+            statsManager.ResetAllStatistics(); // Chiama il metodo del StatisticsManager
 
             if (Application.platform == RuntimePlatform.Android)
             {
                 AndroidJavaClass unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
                 AndroidJavaObject activity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
                 AndroidJavaClass toast = new AndroidJavaClass("android.widget.Toast");
-                AndroidJavaObject toastInstance = toast.CallStatic<AndroidJavaObject>("makeText", activity, "Statistiche resettate!", 0);
+                AndroidJavaObject toastInstance = toast.CallStatic<AndroidJavaObject>("makeText", activity, "Statistiche resettate con successo!", 1);
                 toastInstance.Call("show");
             }
 
