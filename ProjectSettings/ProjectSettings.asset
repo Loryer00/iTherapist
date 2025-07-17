@@ -137,9 +137,7 @@ PlayerSettings:
   loadStoreDebugModeEnabled: 0
   bundleVersion: 1.0.2
   preloadedAssets:
-  - {fileID: 3498705787773720878, guid: 1c45f4d5d2fcdbd4fa2caf037a6f4099, type: 2}
   - {fileID: 11400000, guid: 1410deb806e949443b7181df9832683f, type: 2}
-  - {fileID: 11400000, guid: 12157eedf7b8fd343869e03c806eb80c, type: 2}
   metroInputSource: 0
   wsaTransparentSwapchain: 0
   m_HolographicPauseOnTrackingLoss: 1
@@ -162,7 +160,7 @@ PlayerSettings:
     Android: com.StudioEuPsiche.iTherapist
     Lumin: com.DefaultCompany.com.unity.template.mobile2D
     Standalone: com.DefaultCompany.com.unity.template.mobile2D
-    iPhone: com.DefaultCompany.com.unity.template.mobile2D
+    iPhone: com.StudioEuPsiche.iTherapist
     tvOS: com.DefaultCompany.com.unity.template.mobile2D
   buildNumber:
     Standalone: 0
@@ -896,7 +894,7 @@ PlayerSettings:
   embeddedLinuxEnableGamepadInput: 1
   hmiLogStartupTiming: 0
   hmiCpuConfiguration: 
-  apiCompatibilityLevel: 3
+  apiCompatibilityLevel: 6
   activeInputHandler: 0
   windowsGamepadBackendHint: 0
   cloudProjectId: 
