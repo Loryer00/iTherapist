@@ -245,15 +245,6 @@ public class CalendarUI : MonoBehaviour
         {
             StopCoroutine(resetCoroutine);
             resetCoroutine = null;
-
-            if (Application.platform == RuntimePlatform.Android)
-            {
-                AndroidJavaClass unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
-                AndroidJavaObject activity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
-                AndroidJavaClass toast = new AndroidJavaClass("android.widget.Toast");
-                AndroidJavaObject toastInstance = toast.CallStatic<AndroidJavaObject>("makeText", activity, "Reset annullato - calendario chiuso", 0);
-                toastInstance.Call("show");
-            }
         }
     }
 
@@ -518,14 +509,6 @@ public class CalendarUI : MonoBehaviour
 
     private System.Collections.IEnumerator HandleResetConfirmation()
     {
-        if (Application.platform == RuntimePlatform.Android)
-        {
-            AndroidJavaClass unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
-            AndroidJavaObject activity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
-            AndroidJavaClass toast = new AndroidJavaClass("android.widget.Toast");
-            AndroidJavaObject toastInstance = toast.CallStatic<AndroidJavaObject>("makeText", activity, "Tieni premuto RESET per 3 secondi per confermare", 1);
-            toastInstance.Call("show");
-        }
 
         float pressTime = 0f;
         bool buttonPressed = false;
@@ -570,14 +553,6 @@ public class CalendarUI : MonoBehaviour
             {
                 // Pulsante rilasciato troppo presto
                 buttonPressed = false;
-                if (Application.platform == RuntimePlatform.Android)
-                {
-                    AndroidJavaClass unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
-                    AndroidJavaObject activity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
-                    AndroidJavaClass toast = new AndroidJavaClass("android.widget.Toast");
-                    AndroidJavaObject cancelToast = toast.CallStatic<AndroidJavaObject>("makeText", activity, "Reset annullato - pulsante rilasciato", 0);
-                    cancelToast.Call("show");
-                }
                 resetCompleted = true;
             }
             yield return null;

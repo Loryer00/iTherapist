@@ -121,15 +121,6 @@ public class SettingsManager : MonoBehaviour
         {
             settingsPanel.SetActive(true);
             UpdateUI();
-
-            if (Application.platform == RuntimePlatform.Android)
-            {
-                AndroidJavaClass unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
-                AndroidJavaObject activity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
-                AndroidJavaClass toast = new AndroidJavaClass("android.widget.Toast");
-                AndroidJavaObject toastInstance = toast.CallStatic<AndroidJavaObject>("makeText", activity, "Impostazioni aperte", 0);
-                toastInstance.Call("show");
-            }
         }
     }
 
@@ -332,15 +323,6 @@ public class SettingsManager : MonoBehaviour
         {
             settings.currentSequenceIndex = (settings.currentSequenceIndex + 1) % settings.advancedSequence.Count;
             SaveSettings(); // Salva la progressione
-
-            if (Application.platform == RuntimePlatform.Android)
-            {
-                AndroidJavaClass unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
-                AndroidJavaObject activity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
-                AndroidJavaClass toast = new AndroidJavaClass("android.widget.Toast");
-                AndroidJavaObject toastInstance = toast.CallStatic<AndroidJavaObject>("makeText", activity, $"Prossimo step: {GetCurrentArrowCount()} frecce", 0);
-                toastInstance.Call("show");
-            }
         }
     }
 

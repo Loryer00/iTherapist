@@ -207,14 +207,6 @@ public class HomepageManager : MonoBehaviour
         }
         else
         {
-            if (Application.platform == RuntimePlatform.Android)
-            {
-                AndroidJavaClass unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
-                AndroidJavaObject activity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
-                AndroidJavaClass toast = new AndroidJavaClass("android.widget.Toast");
-                AndroidJavaObject toastInstance = toast.CallStatic<AndroidJavaObject>("makeText", activity, "CalendarUI non trovato!", 0);
-                toastInstance.Call("show");
-            }
         }
     }
 
@@ -228,14 +220,6 @@ public class HomepageManager : MonoBehaviour
         }
         else
         {
-            if (Application.platform == RuntimePlatform.Android)
-            {
-                AndroidJavaClass unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
-                AndroidJavaObject activity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
-                AndroidJavaClass toast = new AndroidJavaClass("android.widget.Toast");
-                AndroidJavaObject toastInstance = toast.CallStatic<AndroidJavaObject>("makeText", activity, "SettingsManager non trovato!", 0);
-                toastInstance.Call("show");
-            }
         }
     }
 
