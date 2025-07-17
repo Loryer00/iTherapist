@@ -6,47 +6,49 @@ public class HomepageManager : MonoBehaviour
 {
     [Header("UI Homepage")]
     public GameObject homepagePanel;
-    public GameObject gamePanel;           // Panel con le frecce
+    public GameObject gamePanel;
     public Button respiroGuidatoButton;
-    public Button menuButton;
-    
+    public Button galleryButton;
+
     [Header("Menu Impostazioni Homepage")]
     public GameObject menuImpostazioniHomepage;
     public Button gestioneImmaginiButton;
-    public Button chiudiMenuButton;
+    public Button chiudiGalleryButton;
 	
 	[Header("Accesso Segreto Statistiche")]
-public RectTransform logoArea; // Area del logo in alto a destra
-public float tempoAccessoSegreto = 3f; // 3 secondi di pressione
+    public RectTransform logoArea; // Area del logo in alto a destra
+    public float tempoAccessoSegreto = 3f; // 3 secondi di pressione
 
-private bool accessoSegretoAttivo = false;
-private float tempoInizioAccessoSegreto;
-private CalendarUI calendarUI;
+    [Header("Panel References")]
+    public GameObject panelGestioneImmagini;
+
+    private bool accessoSegretoAttivo = false;
+    private float tempoInizioAccessoSegreto;
+    private CalendarUI calendarUI;
     
-    private UIManager uiManager;
     private ArrowController arrowController;
-    
+
     void Start()
     {
         // Trova i componenti necessari
-        uiManager = FindObjectOfType<UIManager>();
         arrowController = FindObjectOfType<ArrowController>();
-		calendarUI = FindObjectOfType<CalendarUI>();
-        
+        calendarUI = FindObjectOfType<CalendarUI>();
+
         // Configura i pulsanti
         if (respiroGuidatoButton != null)
             respiroGuidatoButton.onClick.AddListener(IniziRespiroGuidato);
-            
-        if (menuButton != null)
-            menuButton.onClick.AddListener(ToggleMenuHomepage);
-            
+
+        if (galleryButton != null)
+            galleryButton.onClick.AddListener(ToggleMenuHomepage);
+
         if (gestioneImmaginiButton != null)
-            gestioneImmaginiButton.onClick.AddListener(ApriGestioneImmagini);         
-        
+            gestioneImmaginiButton.onClick.AddListener(ApriGestioneImmagini);
+
         // Inizia dalla homepage
         MostraHomepage();
     }
-    
+
+
     public void IniziRespiroGuidato()
 {
     Debug.Log("Avvio Respiro Guidato");
@@ -72,6 +74,7 @@ private CalendarUI calendarUI;
             arrowController.MostraNuovaFreccia();
         }
     }
+
     
     public void TornaAllaHomepage()
 {
@@ -92,27 +95,42 @@ private CalendarUI calendarUI;
         if (homepagePanel != null)
             homepagePanel.SetActive(true);
     }
-    
+
+
     public void ToggleMenuHomepage()
     {
-        /*
-		menuAperto = !menuAperto;
-        if (menuImpostazioniHomepage != null)
-            menuImpostazioniHomepage.SetActive(menuAperto);
-        Debug.Log($"Menu homepage: {(menuAperto ? "Aperto" : "Chiuso")}");
-		*/
-		
-		ApriGestioneImmagini();
+        bool menuAperto = menuImpostazioniHomepage.activeInHierarchy;
+        menuImpostazioniHomepage.SetActive(!menuAperto);
+        Debug.Log($"Menu homepage: {(!menuAperto ? "Aperto" : "Chiuso")}");
     }
-        
+
+    public void ChiudiGestioneImmagini()
+    {
+        if (panelGestioneImmagini != null)
+            panelGestioneImmagini.SetActive(false);
+
+        Debug.Log("Chiusa gestione immagini");
+    }
+
     public void ApriGestioneImmagini()
     {
-        if (uiManager != null)
+        // Chiudi il menu homepage
+        if (menuImpostazioniHomepage != null)
+            menuImpostazioniHomepage.SetActive(false);
+
+        // Usa il riferimento diretto
+        if (panelGestioneImmagini != null)
         {
-            uiManager.ApriGestioneImmagini();
+            panelGestioneImmagini.SetActive(true);
+            Debug.Log("Aperta schermata gestione immagini");
+        }
+        else
+        {
+            Debug.LogError("Panel gestione immagini non assegnato nell'Inspector!");
         }
     }
-    
+
+
     private void MostraHomepage()
     {
         if (homepagePanel != null)
@@ -121,13 +139,15 @@ private CalendarUI calendarUI;
         if (gamePanel != null)
             gamePanel.SetActive(false);            
     }
+
 	
 	void Update()
 {
     GestisciAccessoSegreto();
 }
 
-private void GestisciAccessoSegreto()
+
+    private void GestisciAccessoSegreto()
 {
     // Solo se siamo nella homepage
     if (homepagePanel == null || !homepagePanel.activeInHierarchy) return;
@@ -165,7 +185,8 @@ private void GestisciAccessoSegreto()
     }
 }
 
-private bool IsClickInLogoArea(Vector2 clickPosition)
+
+    private bool IsClickInLogoArea(Vector2 clickPosition)
 {
     if (logoArea == null) return false;
     
@@ -176,24 +197,46 @@ private bool IsClickInLogoArea(Vector2 clickPosition)
     return logoArea.rect.Contains(localPoint);
 }
 
-private void ApriStatistiche()
-{
-    Debug.Log("Accesso segreto attivato - Apertura statistiche");
-    
-    if (calendarUI != null)
+    private void ApriStatistiche()
     {
-        calendarUI.ShowCalendar();
-    }
-    else
-    {
-        if (Application.platform == RuntimePlatform.Android)
+        Debug.Log("Accesso segreto attivato - Apertura statistiche");
+
+        if (calendarUI != null)
         {
-            AndroidJavaClass unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
-            AndroidJavaObject activity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
-            AndroidJavaClass toast = new AndroidJavaClass("android.widget.Toast");
-            AndroidJavaObject toastInstance = toast.CallStatic<AndroidJavaObject>("makeText", activity, "CalendarUI non trovato!", 0);
-            toastInstance.Call("show");
+            calendarUI.ShowCalendar();
+        }
+        else
+        {
+            if (Application.platform == RuntimePlatform.Android)
+            {
+                AndroidJavaClass unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
+                AndroidJavaObject activity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
+                AndroidJavaClass toast = new AndroidJavaClass("android.widget.Toast");
+                AndroidJavaObject toastInstance = toast.CallStatic<AndroidJavaObject>("makeText", activity, "CalendarUI non trovato!", 0);
+                toastInstance.Call("show");
+            }
         }
     }
-}
+
+
+    public void ApriImpostazioni()
+    {
+        SettingsManager settingsManager = FindObjectOfType<SettingsManager>();
+        if (settingsManager != null)
+        {
+            settingsManager.OpenSettings();
+        }
+        else
+        {
+            if (Application.platform == RuntimePlatform.Android)
+            {
+                AndroidJavaClass unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
+                AndroidJavaObject activity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
+                AndroidJavaClass toast = new AndroidJavaClass("android.widget.Toast");
+                AndroidJavaObject toastInstance = toast.CallStatic<AndroidJavaObject>("makeText", activity, "SettingsManager non trovato!", 0);
+                toastInstance.Call("show");
+            }
+        }
+    }
+
 }

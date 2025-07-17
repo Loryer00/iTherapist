@@ -46,7 +46,7 @@ public class ImageStorageManager : MonoBehaviour
         if (buttonModificaImmagini != null)
             buttonModificaImmagini.onClick.AddListener(ToggleModalitaCancellazione);
     }
-    
+
     public void AggiungiNuovaImmagine()
     {
         Debug.Log("Richiesta aggiunta nuova immagine");

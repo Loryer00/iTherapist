@@ -9,14 +9,15 @@ public class ImageManager : MonoBehaviour
     public RawImage selectedImage;       // L'immagine vera e propria
     
     [Header("Impostazioni")]
-    public float tempoVisualizzazione = 3f; // Secondi di visualizzazione
-    
+
     private Texture2D textureCorrente;
     private ImageStorageManager storageManager;
-    
+    private SettingsManager settingsManager;
+
     void Start()
     {
         storageManager = GetComponent<ImageStorageManager>();
+        settingsManager = FindObjectOfType<SettingsManager>();
     }
     
     public void MostraImmagineCasuale()
@@ -47,7 +48,7 @@ public class ImageManager : MonoBehaviour
         }
     }
     
-   private System.Collections.IEnumerator LoadImageCoroutine(string path)
+    private System.Collections.IEnumerator LoadImageCoroutine(string path)
 {
     // Nascondi le frecce prima di mostrare l'immagine
     ArrowController arrowController = GetComponent<ArrowController>();
@@ -88,10 +89,15 @@ public class ImageManager : MonoBehaviour
         imageDisplay.SetActive(true);
         
         Debug.Log("Immagine caricata e mostrata con aspect ratio corretto!");
-        
-        yield return new WaitForSeconds(tempoVisualizzazione);
-        
-        NascondiImmagine();
+
+            float tempoVisualizzazione = 3f; // Default fallback
+            if (settingsManager != null)
+            {
+                tempoVisualizzazione = settingsManager.GetImageDisplayTime();
+            }
+            yield return new WaitForSeconds(tempoVisualizzazione);
+
+            NascondiImmagine();
         
         // Rimostra le frecce e continua il gioco
         if (arrowController != null)

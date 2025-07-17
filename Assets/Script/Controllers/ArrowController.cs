@@ -36,7 +36,8 @@ public class ArrowController : MonoBehaviour
     private Coroutine animazioneCorrente;
     private ImageManager imageManager;
     private HomepageManager homepageManager;
-    
+    private SettingsManager settingsManager;
+
     // Variabili per gestione tocco unificata
     private bool touchAttivo = false;
     private Vector2 puntoInizio;
@@ -47,21 +48,22 @@ public class ArrowController : MonoBehaviour
     private bool toccoProlungatoAttivo = false;
     private float tempoInizioPressione;
     private Coroutine coroutineVibrazioni;
-    
+
     void Start()
     {
         Debug.Log("ArrowController avviato!");
-        
+
         // Trova i componenti necessari
         imageManager = GetComponent<ImageManager>();
         homepageManager = FindObjectOfType<HomepageManager>();
-        
+        settingsManager = FindObjectOfType<SettingsManager>();
+
         // Calcola centro schermo
         centroSchermo = new Vector2(Screen.width * 0.5f, Screen.height * 0.5f);
-        
+
         MostraNuovaFreccia();
     }
-    
+
     void Update()
     {
         GestisciInputUnificato();
@@ -307,41 +309,61 @@ public class ArrowController : MonoBehaviour
             Debug.Log("Gesto sbagliato! Riprova.");
         }
     }
-    
+
     void GestoCorretto()
     {
         Debug.Log("Gesto corretto!");
-        
-    // Registra lo swipe nelle statistiche
-    StatisticsManager statsManager = FindObjectOfType<StatisticsManager>();
-    if (statsManager != null)
-    {
-        statsManager.RecordSwipe();
-    }
-    
-    // Ferma l'animazione precedente
-    if (animazioneCorrente != null)
-    {
-        StopCoroutine(animazioneCorrente);
-    }
-    
-    // Vibrazione
-    Handheld.Vibrate();
-    
-    frecceMostrate++;
-        
-        // Ogni N frecce mostra immagine
-        if (frecceMostrate % freccePerImmagine == 0)
+
+        // Registra lo swipe nelle statistiche
+        StatisticsManager statsManager = FindObjectOfType<StatisticsManager>();
+        if (statsManager != null)
+        {
+            statsManager.RecordSwipe();
+        }
+
+        // Ferma l'animazione precedente
+        if (animazioneCorrente != null)
+        {
+            StopCoroutine(animazioneCorrente);
+        }
+
+        // Vibrazione
+        Handheld.Vibrate();
+
+        frecceMostrate++;
+
+        // Ottieni il numero di frecce corrente dalle impostazioni
+        int freccePerImmagineCorrente = 3; // Default fallback
+        if (settingsManager != null)
+        {
+            freccePerImmagineCorrente = settingsManager.GetCurrentArrowCount();
+        }
+
+        // Controlla se è il momento di mostrare un'immagine
+        if (frecceMostrate >= freccePerImmagineCorrente)
         {
             Debug.Log($"Completate {frecceMostrate} frecce! Tempo di mostrare un'immagine!");
+            Debug.Log($"Frecce richieste per questo step: {freccePerImmagineCorrente}");
+
+            // Reset contatore frecce per il prossimo step
+            frecceMostrate = 0;
+
+            // Avanza la sequenza se siamo in modalità avanzata
+            if (settingsManager != null)
+            {
+                settingsManager.AdvanceSequence();
+            }
+
             Debug.Log("Chiamando imageManager.MostraImmagineCasuale()...");
             imageManager.MostraImmagineCasuale();
         }
-        
-        // Mostra prossima freccia
-        MostraNuovaFreccia();
+        else
+        {
+            // Mostra prossima freccia
+            MostraNuovaFreccia();
+        }
     }
-    
+
     private System.Collections.IEnumerator AnimazioneFreccia()
     {
         if (frecciaPrefab == null) yield break;
